@@ -1,0 +1,50 @@
+\documentclass[times, utf8, zavrsni, numeric]{fer}
+\usepackage{booktabs}
+\usepackage{textcomp}
+\usepackage{listings}
+
+\begin{document}
+
+% Navedite broj rada.
+\thesisnumber{439}
+
+% Navedite naslov rada.
+\title{Programska potpora za prikupljanje i obradu senzorskih podataka na CubeSat nanosatelitu
+}
+
+% Navedite vaše ime i prezime.
+\author{Petar Sušac}
+
+\maketitle
+
+% Ispis stranice s napomenom o umetanju izvornika rada. Uklonite naredbu \izvornik ako želite izbaciti tu stranicu.
+\izvornik
+
+% Dodavanje zahvale ili prazne stranice. Ako ne želite dodati zahvalu, naredbu ostavite radi prazne stranice.
+\zahvala{Hvala.}
+
+\tableofcontents
+
+\include{uvod}
+\include{spi}
+\include{temp_senzor}
+\include{zakljucak}
+
+\bibliography{literatura}
+\bibliographystyle{fer}
+
+\begin{sazetak}
+Sažetak na hrvatskom jeziku.
+
+\kljucnerijeci{Ključne riječi, odvojene zarezima.}
+\end{sazetak}
+
+% Navedite naslov na engleskom jeziku.
+\engtitle{Software for CubeSat Nanosatellite Sensor Data Acquisition and Processing}
+\begin{abstract}
+Abstract.
+
+\keywords{Keywords.}
+\end{abstract}
+
+\end{document}
