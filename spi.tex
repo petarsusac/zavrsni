@@ -2,7 +2,7 @@
 	Komponente senzorske pločice FERSAT-a, odnosno AD pretvornik ADS131M08 i temperaturni senzori ADT7301 komuniciraju s PDH računalom putem sučelja SPI. S obzirom da se pri razvoju programske potpore PDH računala koriste \textit{Low-Level} biblioteke, za ispravnu implementaciju upravljačkih programa nužno je razumijevanje strukture i načina rada SPI periferije izabranog mikrokontrolera. U nastavku ovog poglavlja dan je općeniti opis SPI protokola i opis SPI periferije mikrokontrolera STM32L4.
 	
 	\section{SPI protokol}
-		\textit{Serial Peripheral Interface} (SPI) sinkrono je serijsko komunikacijsko sučelje, razvijeno u tvrtki Motorola \citep{wiki:spi}. Uobičajeno se koristi za povezivanje računala ili mikrokontrolera s brzom periferijom i senzorima na manjim udaljenostima, s obzirom da omogućava brzine do nekoliko desetaka Mbit/s. Podaci se prenose između jedne upravljačke jedinice \engl{master} i više upravljanih jedinica \engl{slave} korištenjem četiri prijenosne linije: SCLK (\textit{Serial Clock}), MISO (\textit{Master Input Slave Output}), MOSI (\textit{Master Output Slave Input}) i CS (\textit{Chip Select}, ponekad se naziva i \textit{Slave Select}). Signal takta pogoni \textit{master}, a pomoću linije CS \textit{master} odabire koji \textit{slave} smije komunicirati preko linija MISO i MOSI. Slika \ref{fig:spi} prikazuje tipičan način spajanja uređaja SPI sučeljem, u konfiguraciji jednog \textit{master} uređaja i tri \textit{slave} uređaja.
+		\textit{Serial Peripheral Interface} (SPI) sinkrono je serijsko komunikacijsko sučelje, razvijeno u tvrtki Motorola. Uobičajeno se koristi za povezivanje računala ili mikrokontrolera s brzom periferijom i senzorima na manjim udaljenostima, s obzirom da omogućava brzine do nekoliko desetaka Mbit/s. Podaci se prenose između jedne upravljačke jedinice \engl{master} i više upravljanih jedinica \engl{slave} korištenjem četiri prijenosne linije: SCLK (\textit{Serial Clock}), MISO (\textit{Master Input Slave Output}), MOSI (\textit{Master Output Slave Input}) i CS (\textit{Chip Select}, ponekad se naziva i \textit{Slave Select}). Signal takta pogoni \textit{master}, a pomoću linije CS \textit{master} odabire koji \textit{slave} smije komunicirati preko linija MISO i MOSI. Slika \ref{fig:spi} prikazuje tipičan način spajanja uređaja SPI sučeljem, u konfiguraciji jednog \textit{master} uređaja i tri \textit{slave} uređaja.
 		
 		\begin{figure}[htb]
 			\centering
@@ -14,7 +14,7 @@
 		Postoje 4 temeljna načina rada \engl{modes} SPI sučelja, a razlikuju se po polaritetu signala takta \engl{Clock Polarity, CPOL} i bridu takta tijekom kojeg \textit{master} čita podatak \engl{Clock Phase, CPHA}.
 		
 	\section{Struktura SPI periferije STM32L4}
-		Slika \ref{fig:stm32l4_spi} prikazuje blok dijagram SPI periferije porodice mikrokontrolera STM32L4 \citep{stm32l4}.
+		Slika \ref{fig:stm32l4_spi} prikazuje blok dijagram SPI periferije porodice mikrokontrolera STM32L4 \cite{stm32l4_manual}.
 	
 		\begin{figure}[htb]
 			\centering
@@ -40,7 +40,7 @@
 		
 		Važno je znati da je u \textit{Full Duplex Master} načinu rada signal SPI takta određen slanjem podataka. SPI kontroler počinje generirati signal takta upisom prve riječi podatka u podatkovni registar, te generira takt dok sve riječi nisu poslane. Ako je zadnja riječ poslana i nema novih riječi u redu Tx FIFO, kontroler prestaje s generiranjem takta do sljedećeg upisa u podatkovni registar. \\
 		
-		Upravljački program mora slijediti sljedeću proceduru\footnote{Ova procedura je prilagođena verzija procedure opisane u priručniku mikrokontrolerske porodice STM32F4 \citep[str.~887]{stm32f4}.}:
+		Upravljački program mora slijediti sljedeću proceduru\footnote{Ova procedura je prilagođena verzija procedure opisane u priručniku mikrokontrolerske porodice STM32F4 \cite[str.~887]{stm32f4_manual}.}:
 		\begin{enumerate}
 			\item Omogućiti SPI postavljanjem bita SPE u registru SPIx\_CR1.
 			\item Upisati prvu riječ za slanje u podatkovni registar.
@@ -50,9 +50,15 @@
 	
 		Čekanje zastavice TXE prilikom upisa druge riječi nije obavezno jer će ona sigurno biti postavljena, odnosno Tx FIFO sigurno može primiti dvije 8-bitne riječi. Međutim, čekanje je potrebno za svaki sljedeći upis.
 	
-		%TODO disable procedura?
+		Ako je nakon dovršenog SPI prijenosa potrebno staviti mikrokontroler u način rada male potrošnje, tada treba na ispravan način onemogućiti SPI. U nekim drugim SPI načinima rada potrebno je onemogućiti SPI nakon svakog prijenosa, npr. ako u \textit{Receive Only Master} načinu rada mikrokontroler komunicira sa sklopom koji kontinuirano šalje podatke, kako bi se spriječilo slanje dodatnih neželjenih podataka. U \textit{Full Duplex} načinu rada to obično nije potrebno, međutim dobra je praksa slijediti pravilnu proceduru za onemogućavanje SPI sučelja nakon završetka prijenosa kako bi se spriječila korupcija zadnje poslane riječi. Procedura za onemogućavanje je:
 		
-		Tijekom uhodavanja SPI sučelja mikrokontrolera STM32F4 i sklopa ADT7301, uočena je greška u implementaciji HAL biblioteke za rad s SPI periferijom kada je SPI u \textit{Receive Only} načinu rada. Naime, u navedenom načinu rada potrebno je očistiti SPE bit točno jedan ciklus SPI takta nakon primitka predzadnje riječi, kako bi se spriječilo da uređaj koji šalje podatak inicira prijenos nove riječi \citep[str.~894]{stm32f4}. HAL funkcija HAL\_SPI\_TransmitReceive() čisti SPE bit tek nakon primitka zadnje riječi, zbog čega senzor šalje još jednu riječ, pa ukupna duljina prijenosa iznosi 24 bita umjesto 16. Također, funkcija čeka da se sklopovski očisti zastavica RXNE prije nego što završi s izvođenjem, a s obzirom da se zadnja riječ nikad ne pročita, zastavica uvijek ostaje postavljena. Zbog toga funkcija uvijek čeka do isteka \textit{timeouta}, što nije poželjno ponašanje. No, to nije predstavljalo problem u daljnem tijeku izrade ovog rada, jer su za razvoj korištene LL biblioteke i \textit{Full Duplex} način rada.
+		\begin{enumerate}
+			\item Čekati dok se ne isprazni odlazni red (TX FIFO) provjerom bitova FTLVL[1:0] u SPI statusnom registru.
+			\item Čekati dok se ne spusti zastavica BSY u SPI statusnom registru.
+			\item Onemogućiti SPI čišćenjem bita SPE u registru CR1.
+		\end{enumerate}
+		
+		Tijekom uhodavanja SPI sučelja mikrokontrolera STM32F4 i sklopa ADT7301, uočena je greška u implementaciji HAL biblioteke za rad s SPI periferijom kada je SPI u \textit{Receive Only} načinu rada. Naime, u navedenom načinu rada potrebno je očistiti SPE bit točno jedan ciklus SPI takta nakon primitka predzadnje riječi kako bi se spriječilo da uređaj koji šalje podatak inicira prijenos nove riječi \cite[str.~894]{stm32f4_manual}. HAL funkcija HAL\_SPI\_TransmitReceive() čisti SPE bit tek nakon primitka zadnje riječi, zbog čega senzor šalje još jednu riječ, pa ukupna duljina prijenosa iznosi 24 bita umjesto 16. Također, funkcija čeka da se sklopovski očisti zastavica RXNE prije nego što završi s izvođenjem, a s obzirom da se zadnja riječ nikad ne pročita, zastavica uvijek ostaje postavljena. Zbog toga funkcija uvijek čeka do isteka \textit{timeouta}, što nije poželjno ponašanje. No, to nije predstavljalo problem u daljnem tijeku izrade ovog rada, jer su za razvoj korištene LL biblioteke i \textit{Full Duplex} način rada.
 		
 	\section{Prijenos podataka korištenjem DMA sklopa}
 		
@@ -63,7 +69,7 @@
 		Prije korištenja DMA sklopa potrebno je obaviti određenu inicijalizaciju. Većina te inicijalizacije, kao što je omogućavanje prekida, postavljanje smjera prijenosa, itd. može se obaviti u alatu CubeMX, pa će ovdje biti opisani samo oni koraci koji se moraju obaviti nakon CubeMX inicijalizacije, s obzirom da su oni posebno važni za razvoj programske potpore. Ne smije se zaboraviti ni inicijalizacija SPI periferije, kako bi ona mogla slati zahtjeve za DMA prijenos. Potrebni koraci su:
 		\begin{enumerate}
 			\item Postaviti adresu periferije za svaki kanal upisom u registar CPAR. Ova se adresa neće inkrementirati nakon svakog prijenosa.
-			\item Postaviti adresu memorije za svaki kanal upisom u registar CMAR. Ova će adresa biti inkrementirana nakon svakog transfera, a iznos inkrementa ovisi o veličini riječi.
+			\item Postaviti adresu memorije za svaki kanal upisom u registar CMAR. Ova će adresa biti inkrementirana nakon svakog prijenosa, a iznos inkrementa ovisi o veličini riječi.
 			\item Omogućiti \textit{Transfer Complete} (TC) prekide za svaki kanal upisom bita TCIE u registru CCR.
 			\item Postaviti duljinu prijenosa, odnosno broj riječi koje se trebaju prenijeti za svaki kanal upisom u registar CNDTR.
 			\item Omogućiti SPI RX zahtjeve za DMA prijenos upisom bita RXDMAEN u SPI registru CR2.
