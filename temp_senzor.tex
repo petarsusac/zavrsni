@@ -6,7 +6,7 @@
 	\begin{figure}[htb]
 		\centering
 		\includegraphics{slike/ADT7301_blok_dijagram.png}
-		\caption{Blok dijagram sklopa ADT7301}
+		\caption{Blok dijagram sklopa ADT7301 \cite{adt7301_datasheet}}
 		\label{fig:adt7301_blok_dijagram}
 	\end{figure}
 
@@ -17,14 +17,14 @@
 	Prilikom ispitivanja senzora u uvjetima sobne temperature, primijećeno je kako nakon nekoliko minuta kontinuiranog rada očitana temperatura počinje rasti, te može pokazivati vrijednosti čak i do 55\textcelsius{}. Zaključeno je da je navedeno posljedica zagrijavanja samog senzora. Zato je odlučeno da će se senzor između mjerenja stavljati u \textit{shutdown} način rada, kako bi se smanjila potrošnja struje, i samim time disipacija toplinske energije.
 
 \section{SPI sučelje}
-	Temperaturni senzor ADT7301 koristi SPI postavke CPOL = 1 i CPHA = 1, što znači da je takt visoke logičke razine u neaktivnom stanju i da se podatak čita na drugi brid takta (rastući).
+	Temperaturni senzor ADT7301 koristi SPI postavke CPOL = 1 i CPHA = 1, što znači da visoka logička razina signala takta odgovara neaktivnom stanju i da se podatak čita na drugi brid takta (rastući).
 	
-	ADT7301 u stanju je istovremeno slati i primati podatke \engl{Full Duplex}. Na svojem priključku DOUT, koji je spojen na SPI liniju MOSI, sklop daje 16-bitni izlazni podatak na način da najznačajniji bit podatka izlazi prvi. Bitovi 15 i 14 su nule, bit 13 je bit predznaka, a ostali bitovi predstavljaju apsolutnu vrijednost očitane temperature. Na priključku DIN, koji je spojen na SPI liniju MISO, sklop prima 16-bitni podatak, gdje svi bitovi osim trećeg najznačajnijeg bita moraju biti nule. Treći najznačajniji bit je 1 u slučaju da se sklop želi staviti u \textit{shutdown} način rada nakon završetka ciklusa slanja, a 0 inače. Slika \ref{fig:adt7301_spi} prikazuje jedan SPI ciklus čitanja/pisanja.
+	ADT7301 u stanju je istovremeno slati i primati podatke \engl{Full Duplex}. Na svojem priključku DOUT, koji je spojen na SPI liniju MOSI, sklop daje 16-bitni izlazni podatak na način da najznačajniji bit podatka izlazi prvi. Bitovi 15 i 14 su u niskoj logičkoj razini, bit 13 je bit predznaka, a ostali bitovi predstavljaju apsolutnu vrijednost očitane temperature. Na priključku DIN, koji je spojen na SPI liniju MISO, sklop prima 16-bitni podatak, gdje svi bitovi osim trećeg najznačajnijeg bita moraju biti u niskoj logičkoj razini. Treći najznačajniji bit je 1 u slučaju da se sklop želi staviti u \textit{shutdown} način rada nakon završetka ciklusa slanja, a 0 inače. Slika \ref{fig:adt7301_spi} prikazuje jedan SPI ciklus čitanja/pisanja.
 	
 	\begin{figure}[htb]
 		\centering
-		\includegraphics{slike/ADT7301_spi.png}
-		\caption{Vremenski dijagram SPI komunikacije sklopa ADT7301}
+		\includegraphics[width=\textwidth]{slike/ADT7301_spi.png}
+		\caption{Vremenski dijagram SPI komunikacije sklopa ADT7301 \cite{adt7301_datasheet}}
 		\label{fig:adt7301_spi}
 	\end{figure}
 	
