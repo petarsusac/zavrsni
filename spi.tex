@@ -56,6 +56,26 @@
 		\end{enumerate}
 	
 		Čekanje zastavice TXE prilikom upisa druge riječi nije obavezno jer će ona sigurno biti postavljena, odnosno Tx FIFO sigurno može primiti dvije 8-bitne riječi. Međutim, čekanje je potrebno za svaki sljedeći upis.
+
+		Gornja procedura implementirana je funkcijom \texttt{SPI\_TransmitReceive()}, koja pruža praktično sučelje za SPI prijenos po uzoru na HAL biblioteke.
+
+		\begin{lstlisting}
+		void SPI_TransmitReceive(SPI_TypeDef *SPIx, uint8_t len, uint8_t *tx_buffer, uint8_t *rx_buffer) 
+		{
+			LL_SPI_Enable(SPIx);
+			
+			LL_SPI_TransmitData8(SPIx, tx_buffer[0]);
+			for (int i = 0; i < len - 1; i++) {
+				while ( !LL_SPI_IsActiveFlag_TXE(SPIx) );
+				LL_SPI_TransmitData8(SPIx, tx_buffer[i + 1]);
+				while ( !LL_SPI_IsActiveFlag_RXNE(SPIx) );
+				rx_buffer[i] = LL_SPI_ReceiveData8(SPIx);
+			}
+			
+			while ( !LL_SPI_IsActiveFlag_RXNE(SPIx) );
+			rx_buffer[len - 1] = LL_SPI_ReceiveData8(SPIx);
+		}
+		\end{lstlisting}
 	
 		Ako je nakon dovršenog SPI prijenosa potrebno staviti mikrokontroler u način rada male potrošnje, tada treba na ispravan način onemogućiti SPI. U nekim drugim SPI načinima rada potrebno je onemogućiti SPI nakon svakog prijenosa, npr. ako u \textit{Receive Only Master} načinu rada mikrokontroler komunicira sa sklopom koji kontinuirano šalje podatke, kako bi se spriječilo slanje dodatnih neželjenih podataka. U \textit{Full Duplex} načinu rada to obično nije potrebno, međutim dobra je praksa slijediti pravilnu proceduru za onemogućavanje SPI sučelja nakon završetka prijenosa kako bi se spriječila korupcija zadnje poslane riječi. Procedura za onemogućavanje je:
 		
