@@ -84,6 +84,16 @@
 			\item Čekati dok se ne spusti zastavica BSY u SPI statusnom registru.
 			\item Onemogućiti SPI čišćenjem bita SPE u registru CR1.
 		\end{enumerate}
+
+		Ova je procedura implementirana funkcijom \texttt{SPI\_Disable()}:
+
+		\begin{lstlisting}
+		void SPI_Disable(SPI_TypeDef *SPIx) {
+			while (LL_SPI_GetTxFIFOLevel(SPIx) != LL_SPI_TX_FIFO_EMPTY);
+			while (LL_SPI_IsActiveFlag_BSY(SPIx));
+			LL_SPI_Disable(SPIx);
+		}
+		\end{lstlisting}
 		
 		Tijekom uhodavanja SPI komunikacije sa sklopom ADT7301 uočena je greška u implementaciji HAL biblioteke za rad s SPI periferijom kada je SPI u \textit{Receive Only} načinu rada. Naime, u navedenom načinu rada potrebno je očistiti SPE bit točno jedan ciklus SPI takta nakon primitka predzadnje riječi kako bi se spriječilo da uređaj koji šalje podatak inicira prijenos nove riječi \cite[str.~894]{stm32f4_manual}. HAL funkcija \texttt{HAL\_SPI\_TransmitReceive()} čisti SPE bit tek nakon primitka zadnje riječi, zbog čega senzor šalje još jednu riječ, pa ukupna duljina prijenosa iznosi 24 bita umjesto 16. Također, funkcija čeka da se sklopovski očisti zastavica RXNE prije nego što završi s izvođenjem, a s obzirom da se zadnja riječ nikad ne pročita, zastavica uvijek ostaje postavljena. Zbog toga funkcija uvijek čeka do isteka \textit{timeout} intervala, što nije poželjno ponašanje. No, to nije predstavljalo problem u daljnem tijeku izrade ovog rada, jer su za razvoj korištene LL biblioteke i \textit{Full Duplex} način rada.
 		
@@ -93,18 +103,75 @@
 		
 		Odabrani mikrokontroler sadrži dva DMA sklopa, a svaki od njih ima 7 prijenosnih kanala. Periferija SPI3 spojena je na sklop DMA2, i to tako da je linija zahtjeva za dolazni prijenos (RX) spojena na kanal 1, a odlazni prijenos (TX) na kanal 2. 
 		
-		Prije korištenja DMA sklopa potrebno je obaviti određenu inicijalizaciju. Većina te inicijalizacije, kao što je omogućavanje prekida, postavljanje smjera prijenosa i slično, može se obaviti u alatu CubeMX, pa će ovdje biti opisani samo oni koraci koji se moraju obaviti nakon CubeMX inicijalizacije, s obzirom da su oni posebno važni za razvoj programske potpore. Ne smije se zaboraviti ni inicijalizacija SPI periferije, kako bi ona mogla slati zahtjeve za DMA prijenos. Potrebni koraci su:
-		\begin{enumerate}
-			\item Postaviti adresu periferije za svaki kanal upisom u registar CPAR. Ova se adresa neće inkrementirati nakon svakog prijenosa.
-			\item Postaviti adresu memorije za svaki kanal upisom u registar CMAR. Ova će adresa biti inkrementirana nakon svakog prijenosa, a iznos inkrementa ovisi o veličini riječi.
-			\item Omogućiti \textit{Transfer Complete} (TC) prekide za svaki kanal upisom bita TCIE u registru CCR.
-			\item Postaviti duljinu prijenosa, odnosno broj riječi koje se trebaju prenijeti za svaki kanal upisom u registar CNDTR.
-			\item Omogućiti SPI RX zahtjeve za DMA prijenos upisom bita RXDMAEN u SPI registru CR2.
-			\item Omogućiti odgovarajuće DMA kanale upisom bita EN u registru CCR za svaki kanal.
-			\item Omogućiti SPI TX zahtjeve za DMA prijenos upisom bita TXDMAEN u SPI registru CR2.
-			\item Omogućiti prekide koje okidaju SPI zastavice RXNE i TXE upisom bitova RXNEIE odnosno TXEIE u SPI registru CR2.
-		\end{enumerate}
+		Prije korištenja DMA sklopa potrebno je obaviti određenu inicijalizaciju. Većina te inicijalizacije, kao što je omogućavanje prekida, postavljanje smjera prijenosa i slično, može se obaviti u alatu CubeMX, pa će ovdje biti opisani samo oni koraci koji se moraju obaviti nakon CubeMX inicijalizacije, s obzirom da su oni posebno važni za razvoj programske potpore. Ne smije se zaboraviti ni inicijalizacija SPI periferije, kako bi ona mogla slati zahtjeve za DMA prijenos. U nastavku je opisana potrebna procedura i programski kod kojim se ta procedura implementira, te je uz svaki korak procedure naveden broj linije koja implementira taj korak.
 		
-		Po završetku DMA prijenosa za svaki kanal, bit će generiran \textit{Transfer Complete} (TC) prekid. Bitno je primijetiti da se prekid generira za svaki kanal posebno. U prekidnoj rutini tih prekida potrebno je očistiti zastavicu CTCFIFx (za kanal x) u DMA registru IFCR i onemogućiti odgovarajući kanal kako bi se spriječio nastavak prijenosa na sljedeći SPI zahtjev kada se postavi zastavica TXE ili RXNE. Kada završe oba prekida, potrebno je onemogućiti SPI RX i TX DMA zahtjeve. Ako se želi pokrenuti novi prijenos, potrebno je ponoviti korake 4 do 8 gore opisane procedure.
+		\begin{enumerate}
+			\item Postaviti adresu periferije za svaki kanal upisom u registar CPAR. Ova se adresa neće inkrementirati nakon svakog prijenosa. (2)
+			\item Postaviti adresu memorije za svaki kanal upisom u registar CMAR. Ova će adresa biti inkrementirana nakon svakog prijenosa, a iznos inkrementa ovisi o veličini riječi. (3)
+			\item Omogućiti \textit{Transfer Complete} (TC) prekide za svaki kanal upisom bita TCIE u registru CCR. (4)
+			\item Postaviti duljinu prijenosa, odnosno broj riječi koje se trebaju prenijeti za svaki kanal upisom u registar CNDTR. (8)
+			\item Omogućiti SPI RX zahtjeve za DMA prijenos upisom bita RXDMAEN u SPI registru CR2. (12)
+			\item Omogućiti odgovarajuće DMA kanale upisom bita EN u registru CCR za svaki kanal. (16, 17)
+			\item Omogućiti SPI TX zahtjeve za DMA prijenos upisom bita TXDMAEN u SPI registru CR2. (21)
+			\item Omogućiti prekide koje okidaju SPI zastavice RXNE i TXE upisom bitova RXNEIE odnosno TXEIE u SPI registru CR2. (25, 26)
+		\end{enumerate}
+
+		\begin{lstlisting}
+		void DMA_Channel_Init(DMA_TypeDef *DMAx, uint32_t channel, uint32_t periph_addr, uint8_t *mem_addr) {
+			LL_DMA_SetPeriphAddress(DMAx, channel, periph_addr);
+			LL_DMA_SetMemoryAddress(DMAx, channel, (uint32_t)mem_addr);
+			LL_DMA_EnableIT_TC(DMAx, channel);
+		}
+
+		void DMA_Set_Channel_Data_Length(DMA_TypeDef *DMAx, uint32_t channel, uint32_t length) {
+			LL_DMA_SetDataLength(DMAx, channel, length);
+		}
+
+		void SPI_Enable_DMA_Rx_Request(SPI_TypeDef *SPIx) {
+			LL_SPI_EnableDMAReq_RX(SPIx);
+		}
+
+		void DMA_Enable_CH1_CH2(DMA_TypeDef *DMAx) {
+			LL_DMA_EnableChannel(DMAx, LL_DMA_CHANNEL_1);
+			LL_DMA_EnableChannel(DMAx, LL_DMA_CHANNEL_2);
+		}
+
+		void SPI_Enable_DMA_Tx_Request(SPI_TypeDef *SPIx) {
+			LL_SPI_EnableDMAReq_TX(SPIx);
+		}
+
+		void SPI_Enable_RXNE_TXE_Interrupts(SPI_TypeDef *SPIx) {
+			LL_SPI_EnableIT_RXNE(SPIx);
+			LL_SPI_EnableIT_TXE(SPIx);
+		}
+		\end{lstlisting}
+		
+		Po završetku DMA prijenosa za svaki kanal, bit će generiran \textit{Transfer Complete} (TC) prekid. Bitno je primijetiti da se prekid generira za svaki kanal posebno. U prekidnoj rutini tih prekida potrebno je očistiti zastavicu CTCFIFx (za kanal x) u DMA registru IFCR i onemogućiti odgovarajući kanal kako bi se spriječio nastavak prijenosa na sljedeći SPI zahtjev kada se postavi zastavica TXE ili RXNE. Kada završe oba prekida, potrebno je onemogućiti SPI RX i TX DMA zahtjeve. Programski kod koji obavlja ovu zadaću dan je u nastavku. S obzirom da prekidne rutine TC prekida izgledaju gotovo identično za oba kanala, navedena je samo jedna od njih.
+
+		\begin{lstlisting}
+		void DMA_Transfer_Complete_RX_interrupt_handler() {
+			LL_DMA_ClearFlag_TC1(DMA2);
+			LL_DMA_DisableChannel(DMA2, LL_DMA_CHANNEL_1);
+			if (tc == 1) {
+				DMA_Disable(SB_SPIx);
+				tc = 0;
+			} else {
+				tc = 1;
+			}
+		}
+
+		void DMA_Disable(SPI_TypeDef *SPIx) {
+			SPI_Disable(SPIx);
+			SPI_Disable_DMA_Requests(SPIx);
+			// Postavi CS prikljucak u visoku razinu
+			LL_GPIO_SetOutputPin(ADC_CS_GPIOx, ADC_CS_PIN);
+			// Omoguci DRDY prekide ADC-a
+			NVIC_EnableIRQ(EXTI4_IRQn);
+		}
+		\end{lstlisting}
+		
+		Globalna varijabla \texttt{tc} je zastavica koja signalizira je li se prekid drugog kanala već dogodio. Tek kada oba kanala završe s prijenosom može se onemogućiti SPI i omogućiti nove prekide ADC-a.
+		
+		Prije pokretanja novog prijenosa potrebno je ponoviti korake 4 do 8 inicijalizacijske procedure.
 		
 		
