@@ -2,6 +2,7 @@
 \usepackage{booktabs}
 \usepackage{textcomp}
 \usepackage{listings}
+
 \lstset{
     language=C,
     tabsize=2,
@@ -11,10 +12,14 @@
     xleftmargin=2em,
     frame=single,
     framexleftmargin=2em,
+    aboveskip=1.5em,
+    belowskip=1em,
     breaklines=true,
     breakatwhitespace=false,
     showstringspaces=false
 }
+
+\newcommand{\textoverline}[1]{$\overline{\mbox{#1}}$}
 
 \begin{document}
 
@@ -40,6 +45,7 @@
 \include{uvod}
 \include{spi}
 \include{temp_senzor}
+\include{adc}
 \include{zakljucak}
 
 \bibliography{literatura}
