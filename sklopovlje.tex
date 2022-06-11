@@ -1,4 +1,34 @@
 \chapter{Opis korištenog sklopovlja}
+    
+    \section{Senzorska pločica FERSAT-a}
+        Sve komponente senzorskog podsustava FERSAT-a smještene su na takozvanoj senzorskoj tiskanoj pločici. Komponente koje se na njoj nalaze su:
+        \begin{itemize}
+            \item 8 fotodetektora (6 detektora vidljive svjetlosti i 2 detektora ultraljubičastog zračenja) s pojačalima LMP7721
+            \item 8 RC filtara, po jedan za svaki detektor
+            \item 3 temperaturna senzora ADT7301
+            \item Analogno-digitalni pretvornik ADS131M08
+        \end{itemize}
+
+        Jedan fotodetektor sastoji se od fotodiode i niskopropusnog filtra izvedenog s pojačalom LMP7721. Slika \ref{fig:fotosenzor} prikazuje jedan takav sklop. Na svaku od dioda postavljen je optički filtar (staklo ispred diode) koji propušta samo svjetlost u određenom području valnih duljina. Područje propuštanja razlikuje se za svaku fotodiodu.
+
+        \begin{figure}[h]
+            \centering
+            \includegraphics[height=7cm]{slike/fotosenzor.png}
+            \caption{Električna shema fotodetektora}
+            \label{fig:fotosenzor}
+        \end{figure}
+
+        Izlaz svakog fotodetektora propušta se kroz niskopropusni RC filtar s graničnom frekvencijom 1590 Hz, a zatim se dovodi na ulaz analogno-digitalnog pretvornika ADS131M08. Na pločici se nalaze i tri temperaturna senzora ADT7301 radi prilagodbe rezultata mjerenja s obzirom na temperaturu.
+        
+        ADC i temperaturni senzori povezani su s PDH računalom jednim SPI sučeljem. Prijenosne linije SPI sučelja, kao i CS linije pojedinih sklopova i drugi upravljački signali, dovedene su do pločice na kojoj se nalazi PDH računalo putem konektora s 40 priključaka, čiji je raspored izvoda prikazan na slici \ref{fig:konektor}.
+
+        \begin{figure}[h]
+            \centering
+            \includegraphics[height=7cm]{slike/konektor.png}
+            \caption{Raspored izvoda konektora na senzorskoj pločici}
+            \label{fig:konektor}
+        \end{figure}
+
     \section{AD pretvornik ADS131M08}
 
         \subsection{Opis rada sklopa}

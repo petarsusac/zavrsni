@@ -1,2 +1,40 @@
 \chapter{Uvod}
-Uvod rada. Nakon uvoda dolaze poglavlja u kojima se obrađuje tema.
+    Projekt FERSAT, koji se od 2018. godine provodi na Fakultetu elektrotehnike i računarstva, uključuje izradu, lansiranje i korištenje jednog nanosatelita CubeSat. Satelit u izradi dimenzija je približno 10 cm x 10 cm x 10 cm, volumena jedne litre i ne teži od 4/3 kilograma, što ga svrstava u skupinu satelita formata CubeSat 1U \cite{fersat_stranica_projekta}. Očekivani životni vijek satelita je 3 godine, a bit će postavljen u Zemljinoj orbiti na visini između 500 i 600 kilometara. Planirani korisni teret \engl{payload} FERSAT-a podijeljen je na tri podsustava:
+
+    \begin{itemize}
+        \item Kamera za snimanje površine Zemlje i zemaljskog horizonta
+        \item Detektori svjetla u vidljivom i ultraljubičastom dijelu spektra za mjerenje svjetlosnog onečišćenja i debljine stupca ozona
+        \item Komunikacijski sustav u radijskom X-pojasu (10.45 GHz) za prijenos podataka na Zemlju
+    \end{itemize}
+
+    Radom korisnog tereta upravlja \textit{Payload Data Handler} (PDH) računalo. Zadaća je PDH računala prikupiti podatke iz senzorskog podsustava i kamere, pohraniti ih u trajnu memoriju \engl{non-volatile memory} te poslati te podatke na Zemlju korištenjem komunikacijskog podsustava. Kao PDH računalo odabran je mikrokontroler STM32L4P5VET6 proizvođača ST Microelectronics.
+
+    Za rad ostalih podsustava satelita koji nisu direktno vezani uz koristan teret (npr. upravljanje položajem satelita, slanje telemetrijskih podataka na Zemlju) brine se \textit{Command and Data Handler} (CDH) računalo. CDH računalo također upravlja napajanjem korisnog tereta i šalje naredbe PDH računalu. Komunikacija CDH i PDH računala odvija se korištenjem sučelja CAN (\textit{Controller Area Network}). Konkretno CDH računalo u trenutku pisanja ovog teksta još nije odabrano.
+
+    Slika \ref{fig:fersat_blok} prikazuje blok dijagram cijelog sustava. U okviru ovog rada razvijena je programska potpora PDH računala za prikupljanje i obradu podataka senzorskog podsustava.
+    
+    \begin{figure}[htb]
+        \centering
+        \includegraphics[width=\textwidth]{slike/fersat_blok_dijagram.png}
+        \caption{Blok dijagram FERSAT-a i komunikacija sa zemaljskom postajom \cite{diplomski_goran_petrak}}
+        \label{fig:fersat_blok}
+    \end{figure}
+
+    Senzorski podsustav ima dvije temeljne zadaće. Prva od njih je korištenjem fotosenzora koji rade u vidljivom dijelu elektromagnetskog spektra prikupiti podatke na temelju kojih će biti moguće odrediti udio LED rasvjete u naseljenim mjestima u odnosu na konvencionalnu natrijevu, metal-halidnu i fluorescentnu javnu rasvjetu. Razvijen je algoritam koji na temelju obrade signala multispektralnog svjetla sa Zemlje može odrediti ovu informaciju \cite{diplomski_jakov_tutavac}. Mjerenje udjela LED rasvjete zanimljivo je zbog mogućih negativnih utjecaja plavog svjetla na ljudsko zravlje, kojeg LED rasvjeta emitira u znatno većem intenzitetu nego konvencionalna \cite{falchi_light_pollution}.
+
+    Druga zadaća senzorskog podsustava mjerenje je propusnosti i refleksije atmosfere za ultraljubičasto svjetlo u svrhu određivanja debljine ozonskog omotača. Za mjerenje se koriste PureB detektori ultraljubičastog zračenja razvijeni na FER-u \cite{diplomski_filip_bogdanovic} i algoritmi razvijeni za tu namjenu \cite{zavrsni_kristian_stepancic}. Uspješna mjerenja po prvi put bi potvrdila mogućnost korištenja ove tehnologije u mjerenjima debljine ozonskog omotača iz svemira.
+
+    Upravljačko sklopovlje potrebno za rad PDH računala već je razvijeno \cite{zavrsni_filip_juric}. Tiskana pločica PDH računala, osim mikrokontrolera STM32L4P5VET6, sadrži i vanjsku \textit{Flash} memoriju, sustav za napajanje, sklop za kontrolu izvođenja programa \engl{watchdog}, upravljački sklop za CAN komunikaciju i konektore za povezivanje s ostalim dijelovima sustava. PDH pločica bit će smještena ispod senzorske pločice, u takozvanoj \textit{stack-up} konfiguraciji (slika \ref{fig:fersat_3d}).
+
+    \begin{figure}[htb]
+        \centering
+        \includegraphics[width=\textwidth]{slike/fersat_3d.png}
+        \caption{Trodimenzionalni model korisnog tereta FERSAT-a. PDH računalo smješteno je na donjoj pločici, a senzorski podsustav na srednjoj \cite{zavrsni_filip_juric}.}
+        \label{fig:fersat_3d}
+    \end{figure}
+
+    Također, u sklopu projekta FERSAT razvijen je i dio programske potpore PDH računala \cite{diplomski_goran_petrak}. No, kako je u međuvremenu došlo do promjene izbora mikrokontrolera PDH računala i promjene sklopovlja koje je dio senzorskog podsustava, dijelove te programske potpore bilo je potrebno prilagoditi ili ponovno razviti.
+
+    Tvrtka ST Microelectronics nudi dva skupa programskih biblioteka za razvoj programske potpore namijenjene njihovim mikrokontrolerima: \textit{Hardware Abstraction Layer} (HAL) i \textit{Low Level} (LL) biblioteke. HAL biblioteke nude višu razinu apstrakcije sklopovlja od LL biblioteka, što omogućuje jednostavniji i brži razvoj, te olakšanu prenosivost između različitih mikrokontrolera istog proizvođača. S druge strane, LL biblioteke nude vrlo nisku razinu apstrakcije, što zahtijeva vrlo dobro poznavanje strukture i načina rada mikrokontrolera od strane programera, ali zato omogućuje pisanje programa koji zauzimaju vrlo malu količinu memorije \cite{stm_hal_ll}. Upravo zbog vrlo ograničene količine memorije dostupne na odabranom mikrokontroleru, tijekom razvoja programske potpore opisane u radu \cite{diplomski_goran_petrak} donesena je odluka o korištenju LL biblioteka. Iz tog razloga LL biblioteke korištene su i u razvoju programske potpore opisane u ovom radu.
+
+    U sklopu ovog rada, najprije će se proučiti SPI (\textit{Serial Peripheral Interface}) sučelje mikrokontrolera STM32L4P5VET6, jer se ono koristi za komunikaciju sa sklopovljem senzorskog podsustava. Zatim će biti detaljnije opisano sklopovlje senzorskog podsustava. Na kraju, bit će opisani razvijeni upravljački programi za pojedine sklopovske komponente, cjelokupna programska potpora za senzorski podsustav, i integracija s ostalim dijelovima programske potpore PDH računala korištenjem operacijskog sustava za rad u stvarnom vremenu FreeRTOS.
