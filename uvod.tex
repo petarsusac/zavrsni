@@ -2,9 +2,9 @@
     Projekt FERSAT, koji se od 2018. godine provodi na Fakultetu elektrotehnike i računarstva, uključuje izradu, lansiranje i korištenje jednog nanosatelita CubeSat. Satelit u izradi dimenzija je približno 10 cm x 10 cm x 10 cm, volumena jedne litre i ne teži od 4/3 kilograma, što ga svrstava u skupinu satelita formata CubeSat 1U \cite{fersat_stranica_projekta}. Očekivani životni vijek satelita je 3 godine, a bit će postavljen u Zemljinoj orbiti na visini između 500 i 600 kilometara. Planirani korisni teret \engl{payload} FERSAT-a podijeljen je na tri podsustava:
 
     \begin{itemize}
-        \item Kamera za snimanje površine Zemlje i zemaljskog horizonta
-        \item Detektori svjetla u vidljivom i ultraljubičastom dijelu spektra za mjerenje svjetlosnog onečišćenja i debljine stupca ozona
-        \item Komunikacijski sustav u radijskom X-pojasu (10.45 GHz) za prijenos podataka na Zemlju
+        \item kamera za snimanje površine Zemlje i zemaljskog horizonta,
+        \item detektori svjetla u vidljivom i ultraljubičastom dijelu spektra za mjerenje svjetlosnog onečišćenja i debljine stupca ozona,
+        \item komunikacijski sustav u radijskom X-pojasu (10.45 GHz) za prijenos podataka na Zemlju.
     \end{itemize}
 
     Radom korisnog tereta upravlja \textit{Payload Data Handler} (PDH) računalo. Zadaća je PDH računala prikupiti podatke iz senzorskog podsustava i kamere, pohraniti ih u trajnu memoriju \engl{non-volatile memory} te poslati te podatke na Zemlju korištenjem komunikacijskog podsustava. Kao PDH računalo odabran je mikrokontroler STM32L4P5VET6 proizvođača ST Microelectronics.
