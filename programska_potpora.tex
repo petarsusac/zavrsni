@@ -204,4 +204,11 @@ Preostaje još samo signalizirati programu povezivaču koje programske varijable
 #define _SECTION_RAM2 __attribute__((section(".ram2")));
 \end{lstlisting}
 
-Makro izraz je zatim naveden uz deklaracije polja u kojima se spremaju kompleksni uzorci fotosenzora i podaci dohvaćeni s ADC-a. 
+Makro izraz je zatim naveden uz deklaracije polja u kojima se spremaju kompleksni uzorci fotosenzora i podaci dohvaćeni s ADC-a. Raspored memorije nakon ove modifikacije prikazan je slikom \ref{fig:memorija}.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=\textwidth]{slike/memorija.png}
+    \caption{Raspored memorije nakon smještanja polja \texttt{complex\_samples} i \texttt{samples\_array} u RAM2.}
+    \label{fig:memorija}
+\end{figure}
