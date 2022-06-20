@@ -142,6 +142,16 @@ void SB_Get_Complex_Samples(Sensor_Board *sb);
 
 Funkcija pretvara 24-bitne rezultate AD pretvorbe u 16-bitne (vodeći računa da se preskoče nepotrebni podaci dobiveni s ADC-a kao što je ispis statusnog registra), zatim ih pretvara u stvarne vrijednosti napona s obzirom na referentni napon ADC-a i zapisuje ih u izlazno polje kao kompleksne brojeve s imaginarnim dijelom jednakim 0. Izlazno polje je statički alocirano i veličine je 16 384 bajta, a u njemu se nakon poziva funkcije nalaze redom uzorci sa svih 8 fotodetektora (prvo 256 kompleksnih uzoraka s kanala 0, zatim 256 kompleksnih uzoraka s kanala 1, itd.).
 
+Ispravan rad funkcije ispitan je tako što je izvršena FFT transformacija rezultata AD pretvorbe jednog kanala korištenjem funkcije \texttt{arm\_rfft\_fast\_f32}. Za ispitivanje je korišten sljedeći odsječak programskog koda:
+
+\begin{lstlisting}
+arm_status status;
+arm_rfft_fast_instance_f32 S;
+static float32_t fft_out[NUM_SAMPLES];
+status = arm_rfft_fast_init_f32(&S, NUM_SAMPLES);
+arm_rfft_fast_f32(&S, (float32_t *) sb.adc->complex_samples, fft_out, 0);
+\end{lstlisting}
+
 \section{Integracija s operacijskim sustavom FreeRTOS}
 
 Razvijena programska potpora za upravljanje senzorskim podsustavom integrirana je s cjelokupnom programskom potporom PDH računala. Programska potpora koristi operacijski sustav za rad u stvarnom vremenu FreeRTOS. Raspodjela poslova u FreeRTOS-u obavlja se korištenjem takozvanih zadataka \engl{tasks}. Programska potpora PDH računala podijeljena je na 4 zadatka, koji su ovdje navedeni redom od zadatka s najvišim prioritetom do zadatka s najnižim prioritetom \cite{diplomski_goran_petrak}:
