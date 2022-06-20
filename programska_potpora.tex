@@ -84,9 +84,6 @@ Funkcija \texttt{ADT7301\_Shutdown} šalje naredbu za postavljanje senzora u na�
 
 Funkcija \texttt{ADT7301\_Wakeup} "budi" senzor iz načina rada niske potrošnje. Primljeni podatak također se zanemaruje.
 
-Za SPI komunikaciju s temperaturnim senzorima koristi se bitno manja frekvencija takta nego za komunikaciju s AD pretvornikom. Djelitelj signala takta postavljen je na vrijednost 32, što s frekvencijom takta sabirnice APB1 od 20 MHz daje frekvenciju SPI takta od 625 kHz. Razlog tome je što je tijekom uhodavanja primijećeno da pri većim frekvencijama dolazi do značajnog deformiranja signala takta. Nije utvrđeno zašto se to događa pri komunikaciji s temperaturnim senzorima, a ne događa se pri komunikaciji s ADC-om. Prema podacima iz dokumentacije senzora, maksimalna frekvencija SPI takta iznosi 20 MHz, no zbog navedenih izobličenja nije bilo moguće postići tu frekvenciju i osigurati ispravan rad.
-
-
 \section{Programska potpora za prikupljanje i obradu podataka} \label{obrada}
 
 Programska potpora za prikupljanje i obradu podataka senzorskog podsustava grupirana je u modul \texttt{sensor\_board}. Omogućuje prikupljanje podataka korištenjem prethodno opisanih upravljačkih programa za sklopove ADS131M08 i ADT7301, te priprema podatke o svjetlosnom onečišćenju prikupljene s ADC-a za obradu algoritmom \textit{Fast Fourier Transform} (FFT).
@@ -172,10 +169,14 @@ U sklopu ovog rada razvijen je zadatak Sensor Board Task. Putem zadatka Interpre
 \begin{lstlisting}
 Sensor_Board sb;
 SB_Init(&sb);
+taskENTER_CRITICAL();
 SB_Get_Temperature_Readings(&sb);
+taskEXIT_CRITICAL();
 SB_Start_ADC_Sampling(&sb);
 SB_Get_Complex_Samples(&sb);
 \end{lstlisting}
+
+Dio programa koji čita podatke s temperaturnih senzora mora se štititi kao kritična sekcija, jer bi njegovo prekidanje od strane drugih zadataka moglo dovesti do grešaka pri spremanju podataka. Dio programa koji čita podatke s ADC-a ne mora se štititi jer prekidanje zadatka neće dovesti do prekida u prijenosu podataka do memorije, s obzirom da je prijenos ostvaren DMA sklopom, a ne programski.
 
 Po završetku izvođenja ovog odsječka programskog koda, uzorcima fotosenzora može se pristupiti preko pokazivača \texttt{adc->complex\_samples} u strukturi \texttt{sb}, a uzorcima temperaturnih senzora preko pokazivača \texttt{tmp\_sensor->samples}, također u strukturi \texttt{sb}. Prikupljeni podaci zapisuju se u datotečni sustav u datotekama čija su imena zadana parametrima zadataka, korištenjem prethodno spomenutih POSIX funkcija. Za potrebe demonstracije dodan je i ispis prikupljenih podataka putem sučelja UART (\textit{Universal Asynchronous Receiver Transmitter}).
 
