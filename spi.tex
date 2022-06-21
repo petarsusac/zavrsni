@@ -16,7 +16,7 @@ Postoje 4 temeljna načina rada \engl{modes} SPI sučelja, a razlikuju se po pol
 \begin{figure}[htb]
 	\centering
 	\includegraphics[height=7cm]{slike/spi_cpol_cpha.png}
-	\caption{Vremenski dijagram SPI prijenosa s različitim postavkama CPOL i CPHA. Crvene linije označavaju prvi, a plave drugi brid  signala takta. \cite{spi_wikipedia}}
+	\caption{Vremenski dijagram SPI prijenosa s različitim postavkama CPOL i CPHA. Crvene linije označavaju prvi, a plave drugi brid  signala takta \cite{spi_wikipedia}}
 	\label{fig:spi_cpol_cpha}
 \end{figure}
 
@@ -43,7 +43,7 @@ Kontroler omogućuje hardversko izračunavanje CRC zaštitnog koda. Ova je mogu�
 \section{Postupak slanja i primanja podataka}
 %TODO: inicijalizacija?
 
-SPI sučelje može funkcionirati u nekoliko načina rada s obzirom na smjer komunikacije. Ti načini rada su: \textit{Full Duplex Master, Full Duplex Slave, Half Duplex Master, Half Duplex Slave, Simplex Receive Only} i \textit{Simplex Transmit Only}. U upravljačkim programima izrađenim u sklopu ovog rada korišten je način rada \textit{Full Duplex Master}, pa će zato u nastavku ovog potpoglavlja biti opisan postupak kojeg upravljački program mora izvršiti za ispravnu komunikaciju u tom načinu rada.
+SPI sučelje može funkcionirati u nekoliko načina rada s obzirom na smjer komunikacije. Podržani načini rada su: \textit{Full Duplex Master, Full Duplex Slave, Half Duplex Master, Half Duplex Slave, Simplex Receive Only} i \textit{Simplex Transmit Only}. U upravljačkim programima izrađenim u sklopu ovog rada korišten je način rada \textit{Full Duplex Master}, pa će zato u nastavku ovog potpoglavlja biti opisan postupak koji upravljački program mora izvršiti za ispravnu komunikaciju u tom načinu rada.
 
 Važno je naglasiti da je u \textit{Full Duplex Master} načinu rada signal SPI takta određen slanjem podataka. SPI kontroler počinje generirati signal takta upisom prve riječi podatka u podatkovni registar, te nastavlja generirati signal takta dok sve riječi nisu poslane. Ako je zadnja riječ poslana i nema novih riječi u redu Tx FIFO, kontroler prestaje s generiranjem takta do sljedećeg upisa u podatkovni registar.
 
@@ -59,7 +59,7 @@ Upravljački program mora slijediti sljedeću proceduru\footnote{Ova procedura j
 
 Gornja procedura implementirana je funkcijom \texttt{SPI\_TransmitReceive()}, koja pruža praktično sučelje za SPI prijenos po uzoru na HAL biblioteke.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={Funkcija za slanje i primanje podataka putem SPI sučelja}]
 void SPI_TransmitReceive(SPI_TypeDef *SPIx, uint8_t len, uint8_t *tx_buffer, uint8_t *rx_buffer) 
 {
 	LL_SPI_Enable(SPIx);
@@ -77,7 +77,7 @@ void SPI_TransmitReceive(SPI_TypeDef *SPIx, uint8_t len, uint8_t *tx_buffer, uin
 }
 \end{lstlisting}
 
-Ako je nakon dovršenog SPI prijenosa potrebno staviti mikrokontroler u način rada male potrošnje, tada treba na ispravan način onemogućiti SPI. U nekim drugim SPI načinima rada potrebno je onemogućiti SPI nakon svakog prijenosa, npr. ako u \textit{Receive Only Master} načinu rada mikrokontroler komunicira sa sklopom koji kontinuirano šalje podatke, kako bi se spriječilo slanje dodatnih neželjenih podataka. U \textit{Full Duplex} načinu rada to obično nije potrebno, međutim dobra je praksa slijediti pravilnu proceduru za onemogućavanje SPI sučelja nakon završetka prijenosa kako bi se spriječila korupcija zadnje poslane riječi. Procedura za onemogućavanje je:
+Ako je nakon dovršenog SPI prijenosa potrebno staviti mikrokontroler u način rada male potrošnje, tada treba na ispravan način onemogućiti SPI. U nekim drugim SPI načinima rada potrebno je onemogućiti SPI nakon svakog prijenosa, npr. ako u \textit{Receive Only Master} načinu rada mikrokontroler komunicira sa sklopom koji kontinuirano šalje podatke, kako bi se spriječilo slanje dodatnih neželjenih podataka. U \textit{Full Duplex} načinu rada to obično nije potrebno, međutim dobra je praksa slijediti pravilnu proceduru za onemogućavanje SPI sučelja nakon završetka prijenosa kako bi se spriječila pogreška tijekom prijenosa zadnje odlazne riječi. Procedura za onemogućavanje je:
 
 \begin{enumerate}
 	\item Čekati dok se ne isprazni odlazni red (TX FIFO) provjerom bitova FTLVL[1:0] u SPI statusnom registru.
@@ -87,7 +87,7 @@ Ako je nakon dovršenog SPI prijenosa potrebno staviti mikrokontroler u način r
 
 Ova je procedura implementirana funkcijom \texttt{SPI\_Disable()}:
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={Funkcija za onemogućavanje SPI sučelja}]
 void SPI_Disable(SPI_TypeDef *SPIx) {
 	while (LL_SPI_GetTxFIFOLevel(SPIx) != LL_SPI_TX_FIFO_EMPTY);
 	while (LL_SPI_IsActiveFlag_BSY(SPIx));
@@ -99,24 +99,24 @@ Tijekom uhodavanja SPI komunikacije sa sklopom ADT7301 uočena je greška u impl
 
 \section{Prijenos podataka korištenjem DMA sklopa}
 
-Prijenos podataka SPI sučeljem između PDH računala i AD pretvornika podrazumijeva slanje relativno velike količine podataka, što može prilično dugo trajati, ovisno o brzini prijenosa. Zato je korisno koristiti DMA (\textit{Direct Memory Access}) sklop za prijenos podataka između SPI periferije i memorije. Za vrijeme DMA prijenosa procesor je rasterećen pa može obavljati druge korisne zadatke, odnosno moguće je ostvarenje neblokirajućih funkcija za SPI prijenos. Dodatna prednost je i smanjenje ukupnog trajanja komunikacije. Naime, kada se SPI komunikacija obavlja programski, program mora prvo upisati odlaznu riječ u podatkovni registar, zatim čekati primitak cijele dolazne riječi, te pročitati riječ prije upisa sljedeće riječi. To ponekad može uzrokovati diskontinuirani prijenos, odnosno periode čekanja između slanja dvije riječi. \cite[str.~890]{stm32f4_manual} Korištenjem DMA slanje i primanje može se obavljati istovremeno, što eliminira ovaj problem.
+Prijenos podataka SPI sučeljem između PDH računala i AD pretvornika podrazumijeva slanje relativno velike količine podataka, što može prilično dugo trajati, ovisno o brzini prijenosa. Zato je korisno koristiti DMA (\textit{Direct Memory Access}) sklop za prijenos podataka između SPI periferije i memorije. Za vrijeme DMA prijenosa procesor je rasterećen pa može obavljati druge korisne zadatke, odnosno moguće je ostvarenje neblokirajućih funkcija za SPI prijenos. Dodatna prednost je i smanjenje ukupnog trajanja komunikacije. Naime, kada se SPI komunikacija obavlja programski, program mora prvo upisati odlaznu riječ u podatkovni registar, zatim čekati primitak cijele dolazne riječi, te pročitati riječ prije upisa sljedeće riječi. To ponekad može uzrokovati diskontinuirani prijenos, odnosno periode čekanja između slanja dvije riječi \cite[str.~890]{stm32f4_manual}. Korištenjem DMA slanje i primanje može se obavljati istovremeno, što eliminira ovaj problem.
 
 Odabrani mikrokontroler sadrži dva DMA sklopa, a svaki od njih ima 7 prijenosnih kanala. Periferija SPI3 spojena je na sklop DMA2, i to tako da je linija zahtjeva za dolazni prijenos (RX) spojena na kanal 1, a odlazni prijenos (TX) na kanal 2. 
 
 Prije korištenja DMA sklopa potrebno je obaviti određenu inicijalizaciju. Većina te inicijalizacije, kao što je omogućavanje prekida, postavljanje smjera prijenosa i slično, može se obaviti u alatu CubeMX, pa će ovdje biti opisani samo oni koraci koji se moraju obaviti nakon CubeMX inicijalizacije, s obzirom da su oni posebno važni za razvoj programske potpore. Ne smije se zaboraviti ni inicijalizacija SPI periferije, kako bi ona mogla slati zahtjeve za DMA prijenos. U nastavku je opisana potrebna procedura i programski kod kojim se ta procedura implementira, te je uz svaki korak procedure naveden broj linije koja implementira taj korak.
 
 \begin{enumerate}
-	\item Postaviti adresu periferije za svaki kanal upisom u registar CPAR. Ova se adresa neće inkrementirati nakon svakog prijenosa. (2)
-	\item Postaviti adresu memorije za svaki kanal upisom u registar CMAR. Ova će adresa biti inkrementirana nakon svakog prijenosa, a iznos inkrementa ovisi o veličini riječi. (3)
-	\item Omogućiti \textit{Transfer Complete} (TC) prekide za svaki kanal upisom bita TCIE u registru CCR. (4)
-	\item Postaviti duljinu prijenosa, odnosno broj riječi koje se trebaju prenijeti za svaki kanal upisom u registar CNDTR. (8)
-	\item Omogućiti SPI RX zahtjeve za DMA prijenos upisom bita RXDMAEN u SPI registru CR2. (12)
-	\item Omogućiti odgovarajuće DMA kanale upisom bita EN u registru CCR za svaki kanal. (16, 17)
-	\item Omogućiti SPI TX zahtjeve za DMA prijenos upisom bita TXDMAEN u SPI registru CR2. (21)
-	\item Omogućiti prekide koje okidaju SPI zastavice RXNE i TXE upisom bitova RXNEIE odnosno TXEIE u SPI registru CR2. (25, 26)
+	\item Postaviti adresu periferije za svaki kanal upisom u registar CPAR. Ova se adresa neće inkrementirati nakon svakog prijenosa (2).
+	\item Postaviti adresu memorije za svaki kanal upisom u registar CMAR. Ova će adresa biti inkrementirana nakon svakog prijenosa, a iznos inkrementa ovisi o veličini riječi (3).
+	\item Omogućiti \textit{Transfer Complete} (TC) prekide za svaki kanal upisom bita TCIE u registru CCR (4).
+	\item Postaviti duljinu prijenosa, odnosno broj riječi koje se trebaju prenijeti za svaki kanal upisom u registar CNDTR (8).
+	\item Omogućiti SPI RX zahtjeve za DMA prijenos upisom bita RXDMAEN u SPI registru CR2 (12).
+	\item Omogućiti odgovarajuće DMA kanale upisom bita EN u registru CCR za svaki kanal (16, 17).
+	\item Omogućiti SPI TX zahtjeve za DMA prijenos upisom bita TXDMAEN u SPI registru CR2 (21).
+	\item Omogućiti prekide koje okidaju SPI zastavice RXNE i TXE upisom bitova RXNEIE odnosno TXEIE u SPI registru CR2 (25, 26).
 \end{enumerate}
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={Inicijalizacija DMA sklopa za SPI prijenos u \textit{Full Duplex} načinu rada}]
 void DMA_Channel_Init(DMA_TypeDef *DMAx, uint32_t channel, uint32_t periph_addr, uint8_t *mem_addr) {
 	LL_DMA_SetPeriphAddress(DMAx, channel, periph_addr);
 	LL_DMA_SetMemoryAddress(DMAx, channel, (uint32_t)mem_addr);
@@ -148,7 +148,7 @@ void SPI_Enable_RXNE_TXE_Interrupts(SPI_TypeDef *SPIx) {
 
 Po završetku DMA prijenosa za svaki kanal, bit će generiran \textit{Transfer Complete} (TC) prekid. Bitno je primijetiti da se prekid generira za svaki kanal posebno. U prekidnoj rutini tih prekida potrebno je očistiti zastavicu CTCFIFx (za kanal x) u DMA registru IFCR i onemogućiti odgovarajući kanal kako bi se spriječio nastavak prijenosa na sljedeći SPI zahtjev kada se postavi zastavica TXE ili RXNE. Kada završe oba prekida, potrebno je onemogućiti SPI RX i TX DMA zahtjeve. Programski kod koji obavlja ovu zadaću dan je u nastavku. S obzirom da prekidne rutine TC prekida izgledaju gotovo identično za oba kanala, navedena je samo jedna od njih.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={Prekidna rutina prekida \textit{DMA Transfer Complete}}]
 void DMA_Transfer_Complete_RX_interrupt_handler() {
 	LL_DMA_ClearFlag_TC1(DMA2);
 	LL_DMA_DisableChannel(DMA2, LL_DMA_CHANNEL_1);
