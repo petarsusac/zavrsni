@@ -1,7 +1,7 @@
 \chapter{Opis korištenog sklopovlja}
 
 \section{Senzorska pločica FERSAT-a}
-Sve komponente senzorskog podsustava FERSAT-a smještene su na takozvanoj senzorskoj tiskanoj pločici. Komponente koje se na njoj nalaze su:
+Slika \ref{fig:sensor_board_blok} prikazuje blok dijagram senzorskog podsustava FERSAT-a. Sve komponente sustava smještene su na takozvanoj senzorskoj tiskanoj pločici. Komponente koje se na njoj nalaze su:
 \begin{itemize}
     \item 8 fotodetektora (6 detektora vidljive svjetlosti i 2 detektora ultraljubičastog zračenja) s pojačalima LMP7721,
     \item 8 RC filtara, po jedan za svaki detektor,
@@ -9,9 +9,16 @@ Sve komponente senzorskog podsustava FERSAT-a smještene su na takozvanoj senzor
     \item analogno-digitalni pretvornik ADS131M08.
 \end{itemize}
 
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=\textwidth]{slike/sensor_board_blok.png}
+    \caption{Blok dijagram senzorskog podsustava}
+    \label{fig:sensor_board_blok}
+\end{figure}
+
 Jedan fotodetektor sastoji se od fotodiode i transimpedancijskog pojačala izvedenog pojačalom LMP7721. Slika \ref{fig:fotosenzor} prikazuje jedan takav sklop. Transimpedancijsko pojačalo pretvara struju fotodiode u naponski signal i ujedno pojačava signal. S obzirom da pojačanje transimpedancijskog pojačala linearno ovisi o impedanciji u povratnoj vezi \cite{lmp7721_datasheet}, korištena je velika vrijednost otpora i mala vrijednost kapaciteta kako bi se postigao velik iznos pojačanja. Na svaku od dioda postavljen je optički filtar (staklo ispred diode) koji propušta samo svjetlost u određenom području valnih duljina. Područje propuštanja razlikuje se za svaku fotodiodu.
 
-\begin{figure}[h!]
+\begin{figure}[htb]
     \centering
     \includegraphics[height=7cm]{slike/fotosenzor.png}
     \caption{Električna shema fotodetektora}
@@ -22,7 +29,7 @@ Izlaz svakog fotodetektora propušta se kroz niskopropusni RC filtar, koji djelu
 
 ADC i temperaturni senzori povezani su s PDH računalom jednim SPI sučeljem. Prijenosne linije SPI sučelja, kao i CS linije pojedinih sklopova i drugi upravljački signali, dovedene su do pločice na kojoj se nalazi PDH računalo putem konektora s 40 priključaka, čiji je raspored izvoda prikazan na slici \ref{fig:konektor}.
 
-\begin{figure}[h!]
+\begin{figure}[htb]
     \centering
     \includegraphics[height=7cm]{slike/konektor.png}
     \caption{Raspored izvoda konektora na senzorskoj pločici}
