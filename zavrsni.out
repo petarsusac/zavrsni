@@ -1,24 +1,23 @@
 \BOOKMARK [0][-]{chapter.1}{Uvod}{}% 1
-\BOOKMARK [0][-]{chapter.2}{Sucelje za komunikaciju sa senzorskim podsustavom}{}% 2
-\BOOKMARK [1][-]{section.2.1}{SPI protokol}{chapter.2}% 3
-\BOOKMARK [1][-]{section.2.2}{Struktura SPI periferije STM32L4}{chapter.2}% 4
-\BOOKMARK [1][-]{section.2.3}{Postupak slanja i primanja podataka}{chapter.2}% 5
-\BOOKMARK [1][-]{section.2.4}{Prijenos podataka kori\235tenjem DMA sklopa}{chapter.2}% 6
-\BOOKMARK [0][-]{chapter.3}{Opis kori\235tenog sklopovlja}{}% 7
-\BOOKMARK [1][-]{section.3.1}{Senzorska plocica FERSAT-a}{chapter.3}% 8
-\BOOKMARK [1][-]{section.3.2}{AD pretvornik ADS131M08}{chapter.3}% 9
-\BOOKMARK [2][-]{subsection.3.2.1}{Opis rada sklopa}{section.3.2}% 10
-\BOOKMARK [2][-]{subsection.3.2.2}{SPI sucelje}{section.3.2}% 11
-\BOOKMARK [1][-]{section.3.3}{Temperaturni senzor ADT7301}{chapter.3}% 12
-\BOOKMARK [2][-]{subsection.3.3.1}{Opis rada sklopa}{section.3.3}% 13
-\BOOKMARK [2][-]{subsection.3.3.2}{SPI sucelje}{section.3.3}% 14
-\BOOKMARK [0][-]{chapter.4}{Razvijena programska potpora}{}% 15
-\BOOKMARK [1][-]{section.4.1}{Struktura programske potpore}{chapter.4}% 16
-\BOOKMARK [1][-]{section.4.2}{Kori\235tene biblioteke i alati}{chapter.4}% 17
-\BOOKMARK [1][-]{section.4.3}{Upravljacki program za AD pretvornik ADS131M08}{chapter.4}% 18
-\BOOKMARK [1][-]{section.4.4}{Upravljacki program za temperaturni senzor ADT7301}{chapter.4}% 19
-\BOOKMARK [1][-]{section.4.5}{Programska potpora za prikupljanje i obradu podataka}{chapter.4}% 20
-\BOOKMARK [1][-]{section.4.6}{Integracija s operacijskim sustavom FreeRTOS}{chapter.4}% 21
-\BOOKMARK [2][-]{subsection.4.6.1}{Mapiranje dijelova memorije u RAM2}{section.4.6}% 22
-\BOOKMARK [0][-]{chapter.5}{Zakljucak}{}% 23
-\BOOKMARK [0][-]{chapter*.18}{Literatura}{}% 24
+\BOOKMARK [0][-]{chapter.2}{Arhitektura korisnog tereta FERSAT-a}{}% 2
+\BOOKMARK [0][-]{chapter.3}{Opis kori\235tenog sklopovlja}{}% 3
+\BOOKMARK [1][-]{section.3.1}{Senzorska plocica FERSAT-a}{chapter.3}% 4
+\BOOKMARK [1][-]{section.3.2}{AD pretvornik ADS131M08}{chapter.3}% 5
+\BOOKMARK [1][-]{section.3.3}{Temperaturni senzor ADT7301}{chapter.3}% 6
+\BOOKMARK [0][-]{chapter.4}{Sucelje za komunikaciju sa senzorskim podsustavom}{}% 7
+\BOOKMARK [1][-]{section.4.1}{SPI protokol}{chapter.4}% 8
+\BOOKMARK [1][-]{section.4.2}{Struktura SPI periferije STM32L4}{chapter.4}% 9
+\BOOKMARK [1][-]{section.4.3}{Postupak slanja i primanja podataka}{chapter.4}% 10
+\BOOKMARK [1][-]{section.4.4}{Prijenos podataka kori\235tenjem DMA sklopa}{chapter.4}% 11
+\BOOKMARK [1][-]{section.4.5}{SPI sucelje sklopa ADS131M08}{chapter.4}% 12
+\BOOKMARK [1][-]{section.4.6}{SPI sucelje sklopa ADT7301}{chapter.4}% 13
+\BOOKMARK [0][-]{chapter.5}{Razvijena programska potpora}{}% 14
+\BOOKMARK [1][-]{section.5.1}{Struktura programske potpore}{chapter.5}% 15
+\BOOKMARK [1][-]{section.5.2}{Kori\235tene biblioteke i alati}{chapter.5}% 16
+\BOOKMARK [1][-]{section.5.3}{Upravljacki program za AD pretvornik ADS131M08}{chapter.5}% 17
+\BOOKMARK [1][-]{section.5.4}{Upravljacki program za temperaturni senzor ADT7301}{chapter.5}% 18
+\BOOKMARK [1][-]{section.5.5}{Programska potpora za prikupljanje i obradu podataka}{chapter.5}% 19
+\BOOKMARK [1][-]{section.5.6}{Integracija s operacijskim sustavom FreeRTOS}{chapter.5}% 20
+\BOOKMARK [2][-]{subsection.5.6.1}{Mapiranje dijelova memorije u RAM2}{section.5.6}% 21
+\BOOKMARK [0][-]{chapter.6}{Zakljucak}{}% 22
+\BOOKMARK [0][-]{chapter*.18}{Literatura}{}% 23

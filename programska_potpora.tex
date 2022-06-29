@@ -42,7 +42,7 @@ Funkcija \texttt{ADC\_Init()} inicijalizira članove strukture \texttt{ADS131M08
 
 Nakon što je inicijalizacija dovršena, dohvaćanje podataka može se pokrenuti funkcijom \texttt{ADC\_Start\_Sampling()}. Ova funkcija prvo poziva pomoćnu funkciju \texttt{ADC\_First\_Read()} koja obavlja čišćenje međuspremnika ADC-a s dva uzastopna čitanja kao što je opisano u potpoglavlju \ref{section_adc}. Zatim se omogućuje prekid kojeg izaziva padajući brid signala na priključku \textoverline{DRDY} ADC-a, čime započinje prikupljanje podataka.
 
-Navedeni prekid doveden je na prekidnu liniju EXTI4 prekidnog kontrolera. Rutina koja rukuje prekidom poziva funkciju \texttt{ADC\_DRDY\_interrupt\_handler()}. Funkcija postavlja duljinu prijenosa i odredišnu adresu, omogućuje DMA prijenos pozivanjem funkcija koje postavljaju odgovarajuće bitove u registrima SPI i DMA periferija, te postavlja priključak \textoverline{CS} ADC-a u nisku logičku razinu. Nakon toga SPI prijenos se odvija automatski sklopovskom sinkronizacijom između SPI i DMA periferija. Po završetku zadanog broja prijenosa onemogućuje se \textoverline{DRDY} prekid.
+Navedeni prekid doveden je na prekidnu liniju EXTI4 prekidnog kontrolera. Rutina koja obrađuje prekid poziva funkciju \texttt{ADC\_DRDY\_interrupt\_handler()}. Funkcija postavlja duljinu prijenosa i odredišnu adresu, omogućuje DMA prijenos pozivanjem funkcija koje postavljaju odgovarajuće bitove u registrima SPI i DMA periferija, te postavlja priključak \textoverline{CS} ADC-a u nisku logičku razinu. Nakon toga SPI prijenos se odvija automatski sklopovskom sinkronizacijom između SPI i DMA periferija. Po završetku zadanog broja prijenosa onemogućuje se \textoverline{DRDY} prekid.
 
 Podaci prikupljeni s ADC-a spremaju se u statički alocirano polje 8-bitnih cijelih brojeva. Jedan uzorak svakog od kanala veličine je 24 bita, odnosno 3 bajta. Ukupna duljina podataka jednog okvira, koji sadrži uzorke svih 8 kanala, ispis statusnog registra ADC-a i CRC zaštitni kod poruke, je 30 bajtova. Prikuplja se 256 okvira, pa ukupna duljina podataka iznosi 7680 bajtova.
 
@@ -82,7 +82,7 @@ Funkcija \texttt{ADT7301\_Collect\_Sample()} obavlja pretvorbu primljenog podatk
 
 Funkcija \texttt{ADT7301\_Shutdown()} šalje naredbu za postavljanje senzora u način rada niske potrošnje (\textit{shutdown}). Podatak primljen sa senzora zanemaruje se.
 
-Funkcija \texttt{ADT7301\_Wakeup} \glqq{}budi\grqq{} senzor iz načina rada niske potrošnje. Primljeni podatak također se zanemaruje.
+Funkcija \texttt{ADT7301\_Wakeup()} \glqq{}budi\grqq{} senzor iz načina rada niske potrošnje. Primljeni podatak također se zanemaruje.
 
 \section{Programska potpora za prikupljanje i obradu podataka} \label{obrada}
 
@@ -161,10 +161,10 @@ arm_rfft_fast_f32(&S, (float32_t *) sb.adc->complex_samples, fft_out, 0);
 Razvijena programska potpora za upravljanje senzorskim podsustavom integrirana je s cjelokupnom programskom potporom PDH računala. Programska potpora koristi operacijski sustav za rad u stvarnom vremenu FreeRTOS. Raspodjela poslova u FreeRTOS-u obavlja se korištenjem takozvanih zadataka \engl{tasks}. Programska potpora PDH računala podijeljena je na 4 zadatka, koji su ovdje navedeni redom od zadatka s najvišim prioritetom do zadatka s najnižim prioritetom \cite{diplomski_goran_petrak}:
 
 \begin{enumerate}
-    \item Interpreter Task: komunicira s CDH računalom, odnosno osobnim računalom u demonstracijskoj inačici programa, i postavlja parametre za izvršavanje ostalih zadataka (\textit{device tasks}),
-    \item X-band and Storage Management Task: upravlja komunikacijskim podsustavom i datotečnim sustavom za trajnu memoriju,
-    \item Camera Task: upravlja radom kamere,
-    \item Sensor Board Task: upravlja senzorskim podsustavom.
+    \item \textit{Interpreter Task}: komunicira s CDH računalom, odnosno osobnim računalom u demonstracijskoj inačici programa, i postavlja parametre za izvršavanje ostalih zadataka (\textit{device tasks}),
+    \item \textit{X-band and Storage Management Task}: upravlja komunikacijskim podsustavom i datotečnim sustavom za trajnu memoriju,
+    \item \textit{Camera Task}: upravlja radom kamere,
+    \item \textit{Sensor Board Task}: upravlja senzorskim podsustavom.
 \end{enumerate}
 
 \begin{figure}[htb]
@@ -174,13 +174,13 @@ Razvijena programska potpora za upravljanje senzorskim podsustavom integrirana j
     \label{fig:rtos_zadaci}
 \end{figure}
 
-Zadaci međusobno komuniciraju putem redova poruka \engl{message queue}. Zadatak Interpreter postavlja parametre za svaki od \textit{device} zadataka (npr. ime datoteke u koju se podaci spremaju, duljinu ekspozicije kamere, itd.) te postavlja poruku s parametrima u red poruka odgovarajućeg zadatka. Kada su postavljeni parametri za sve zadatke, zadatak Interpreter spušta svoj prioritet na najniži u sustavu. To omogućuje aktivaciju ostalih zadataka, koji čitaju poruke iz pripadajućih redova i obavljaju svoje poslove. Nakon što neki od zadataka završi s poslom, šalje poruku o uspješnosti u red poruka zadatka Interpreter, a zatim biva blokiran čekajući na poruku iz (sada praznog) reda poruka. Kada svi zadaci obave svoj posao, ponovno se aktivira zadatak Interpreter i ciklus se ponavlja. Komunikacija između zadataka prikazana je slikom \ref{fig:rtos_zadaci}. Eventualni dijeljeni resursi ne štite se nikakvim posebnim mehanizmima jer je sustav zamišljen tako da se zadaci međusobno ne prekidaju.
+Zadaci međusobno komuniciraju putem redova poruka \engl{message queue}. Zadatak \textit{Interpreter} postavlja parametre za svaki od \textit{device} zadataka (npr. ime datoteke u koju se podaci spremaju, duljinu ekspozicije kamere, itd.) te postavlja poruku s parametrima u red poruka odgovarajućeg zadatka. Kada su postavljeni parametri za sve zadatke, zadatak \textit{Interpreter} spušta svoj prioritet na najniži u sustavu. To omogućuje aktivaciju ostalih zadataka, koji čitaju poruke iz pripadajućih redova i obavljaju svoje poslove. Nakon što neki od zadataka završi s poslom, šalje poruku o uspješnosti u red poruka zadatka \textit{Interpreter}, a zatim biva blokiran čekajući na poruku iz (sada praznog) reda poruka. Kada svi zadaci obave svoj posao, ponovno se aktivira zadatak \textit{Interpreter} i ciklus se ponavlja. Komunikacija između zadataka prikazana je slikom \ref{fig:rtos_zadaci}. Eventualni dijeljeni resursi ne štite se nikakvim posebnim mehanizmima jer je sustav zamišljen tako da se zadaci međusobno ne prekidaju.
 
 U sklopu rada \cite{diplomski_goran_petrak} razvijen je i datotečni sustav za trajnu \textit{Flash} memoriju koja se nalazi na tiskanoj pločici PDH računala. Za rad s datotečnim sustavom razvijene su korisničke funkcije po uzoru na standard POSIX (\textit{Portable Operating System Interface}). Funkcije omogućuju jednostavno pisanje i čitanje datoteka s \textit{Flash} memorije, te se koriste u svim \textit{device} zadacima.
 
-U sklopu ovog rada razvijen je zadatak Sensor Board Task. Putem zadatka Interpreter korisnik može zadati imena datoteka u koje će se spremiti uzorci sa fotosenzora (u kompleksnom zapisu, kao što je opisano u potpoglavlju \ref{obrada}) i uzorci s temperaturnih senzora. Imena datoteka su cijeli brojevi u intervalu od 0 do 1023. Nakon što se parametri pročitaju iz reda poruka, pokreće se postupak prikupljanja podataka:
+U sklopu ovog rada razvijen je zadatak \textit{Sensor Board Task}. Putem zadatka \textit{Interpreter} korisnik može zadati imena datoteka u koje će se spremiti uzorci sa fotosenzora (u kompleksnom zapisu, kao što je opisano u potpoglavlju \ref{obrada}) i uzorci s temperaturnih senzora. Imena datoteka su cijeli brojevi u intervalu od 0 do 1023. Nakon što se parametri pročitaju iz reda poruka, pokreće se postupak prikupljanja podataka, kao što je prikazano u odsječku koda \ref{lst:sensor_task_kod}.
 
-\begin{lstlisting}[caption={Prikupljanje podataka u sklopu zadatka za upravljanje senzorskim podsustavom}]
+\begin{lstlisting}[caption={Prikupljanje podataka u sklopu zadatka za upravljanje senzorskim podsustavom}, label={lst:sensor_task_kod}]
 Sensor_Board sb;
 SB_Init(&sb);
 taskENTER_CRITICAL();
