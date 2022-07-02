@@ -19,5 +19,6 @@
 \BOOKMARK [1][-]{section.5.5}{Programska potpora za prikupljanje i obradu podataka}{chapter.5}% 19
 \BOOKMARK [1][-]{section.5.6}{Integracija s operacijskim sustavom FreeRTOS}{chapter.5}% 20
 \BOOKMARK [2][-]{subsection.5.6.1}{Mapiranje dijelova memorije u RAM2}{section.5.6}% 21
-\BOOKMARK [0][-]{chapter.6}{Zakljucak}{}% 22
-\BOOKMARK [0][-]{chapter*.18}{Literatura}{}% 23
+\BOOKMARK [1][-]{section.5.7}{Programska potpora za upravljanje sklopom watchdog, CAN suceljem i RF modulom}{chapter.5}% 22
+\BOOKMARK [0][-]{chapter.6}{Zakljucak}{}% 23
+\BOOKMARK [0][-]{chapter*.21}{Literatura}{}% 24

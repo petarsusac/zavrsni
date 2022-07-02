@@ -158,27 +158,7 @@ arm_rfft_fast_f32(&S, (float32_t *) sb.adc->complex_samples, fft_out, 0);
 
 \section{Integracija s operacijskim sustavom FreeRTOS}
 
-Razvijena programska potpora za upravljanje senzorskim podsustavom integrirana je s cjelokupnom programskom potporom PDH računala. Programska potpora koristi operacijski sustav za rad u stvarnom vremenu FreeRTOS. Raspodjela poslova u FreeRTOS-u obavlja se korištenjem takozvanih zadataka \engl{tasks}. Programska potpora PDH računala podijeljena je na 4 zadatka, koji su ovdje navedeni redom od zadatka s najvišim prioritetom do zadatka s najnižim prioritetom \cite{diplomski_goran_petrak}:
-
-\begin{enumerate}
-    \item \textit{Interpreter Task}: komunicira s CDH računalom, odnosno osobnim računalom u demonstracijskoj inačici programa, i postavlja parametre za izvršavanje ostalih zadataka (\textit{device tasks}),
-    \item \textit{X-band and Storage Management Task}: upravlja komunikacijskim podsustavom i datotečnim sustavom za trajnu memoriju,
-    \item \textit{Camera Task}: upravlja radom kamere,
-    \item \textit{Sensor Board Task}: upravlja senzorskim podsustavom.
-\end{enumerate}
-
-\begin{figure}[htb]
-    \centering
-    \includegraphics[width=\textwidth]{slike/rtos_zadaci.png}
-    \caption{Zadaci programske potpore PDH računala \cite{diplomski_goran_petrak}}
-    \label{fig:rtos_zadaci}
-\end{figure}
-
-Zadaci međusobno komuniciraju putem redova poruka \engl{message queue}. Zadatak \textit{Interpreter} postavlja parametre za svaki od \textit{device} zadataka (npr. ime datoteke u koju se podaci spremaju, duljinu ekspozicije kamere, itd.) te postavlja poruku s parametrima u red poruka odgovarajućeg zadatka. Kada su postavljeni parametri za sve zadatke, zadatak \textit{Interpreter} spušta svoj prioritet na najniži u sustavu. To omogućuje aktivaciju ostalih zadataka, koji čitaju poruke iz pripadajućih redova i obavljaju svoje poslove. Nakon što neki od zadataka završi s poslom, šalje poruku o uspješnosti u red poruka zadatka \textit{Interpreter}, a zatim biva blokiran čekajući na poruku iz (sada praznog) reda poruka. Kada svi zadaci obave svoj posao, ponovno se aktivira zadatak \textit{Interpreter} i ciklus se ponavlja. Komunikacija između zadataka prikazana je slikom \ref{fig:rtos_zadaci}. Eventualni dijeljeni resursi ne štite se nikakvim posebnim mehanizmima jer je sustav zamišljen tako da se zadaci međusobno ne prekidaju.
-
-U sklopu rada \cite{diplomski_goran_petrak} razvijen je i datotečni sustav za trajnu \textit{Flash} memoriju koja se nalazi na tiskanoj pločici PDH računala. Za rad s datotečnim sustavom razvijene su korisničke funkcije po uzoru na standard POSIX (\textit{Portable Operating System Interface}). Funkcije omogućuju jednostavno pisanje i čitanje datoteka s \textit{Flash} memorije, te se koriste u svim \textit{device} zadacima.
-
-U sklopu ovog rada razvijen je zadatak \textit{Sensor Board Task}. Putem zadatka \textit{Interpreter} korisnik može zadati imena datoteka u koje će se spremiti uzorci sa fotosenzora (u kompleksnom zapisu, kao što je opisano u potpoglavlju \ref{obrada}) i uzorci s temperaturnih senzora. Imena datoteka su cijeli brojevi u intervalu od 0 do 1023. Nakon što se parametri pročitaju iz reda poruka, pokreće se postupak prikupljanja podataka, kao što je prikazano u odsječku koda \ref{lst:sensor_task_kod}.
+Razvijena programska potpora za upravljanje senzorskim podsustavom integrirana je s cjelokupnom programskom potporom PDH računala, koja je opisana u poglavlju \ref{chapter:arhitektura}. U sklopu ovog rada razvijen je zadatak \textit{Sensor Board Task}. Putem zadatka \textit{Interpreter} korisnik može zadati imena datoteka u koje će se spremiti uzorci sa fotosenzora (u kompleksnom zapisu, kao što je opisano u potpoglavlju \ref{obrada}) i uzorci s temperaturnih senzora. Imena datoteka su cijeli brojevi u intervalu od 0 do 1023. Nakon što se parametri pročitaju iz reda poruka, pokreće se postupak prikupljanja podataka, kao što je prikazano u odsječku koda \ref{lst:sensor_task_kod}.
 
 \begin{lstlisting}[caption={Prikupljanje podataka u sklopu zadatka za upravljanje senzorskim podsustavom}, label={lst:sensor_task_kod}]
 Sensor_Board sb;
@@ -227,3 +207,29 @@ Makro izraz je zatim naveden uz deklaracije polja u kojima se spremaju kompleksn
     \caption{Raspored memorije nakon smještanja polja \texttt{complex\_samples} i \texttt{samples\_array} u RAM2}
     \label{fig:memorija}
 \end{figure}
+
+\section{Programska potpora za upravljanje sklopom \textit{watchdog}, CAN sučeljem i RF modulom}
+
+U sklopu ovog rada planiran je još i razvoj programske potpore za upravljanje sklopom \textit{watchdog}, sučeljem CAN za komunikaciju između CDH i PDH računala, i RF (\textit{Radio Frequency}) modulom, no zbog vremenskih ograničenja i problema sa sklopovljem taj dio programske potpore nije razvijen.
+
+Sklop \textit{watchdog} služi za kontrolu izvođenja programa. Zadaća mu je resetirati mikrokontroler ukoliko isti ne pošalje signalni impuls prije isteka određenog vremenskog intervala. Sklop se nalazi na tiskanoj pločici PDH računala, a njegova električna shema prikazana je slikom \ref{fig:watchdog}. Iz slike je vidljivo da je priključak \textoverline{EN} sklopa spojen na referentni potencijal, odnosno na priključak je trajno dovedena niska logička razina. S obzirom da niska logička razina na priključku \textoverline{EN} čini sklop aktivnim, nemoguće ga je ugasiti tijekom programiranja mikrokontrolera. Izlaz sklopa kratko je spojen na priključak koji resetira mikrokontroler. Budući da je vrijeme potrebno za programiranje mikrokontrolera znatno dulje od perioda brojila \textit{watchdoga}, sklop resetira mikrokontroler tijekom programiranja, što čini programiranje s priključenim sklopom \textit{watchdog} nemogućim. Zato je sklop odspojen s testne pločice i razvoj je nastavljen bez njega. U budućim iteracijama tiskane pločice bit će potrebno otkloniti ovaj problem kako bi se mogla razviti i ispitati programska potpora za upravljanje sklopom.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=\textwidth]{slike/watchdog.png}
+    \caption{Električna shema sklopa \textit{watchdog} \cite{zavrsni_filip_juric}}
+    \label{fig:watchdog}
+\end{figure}
+
+Programska potpora za CAN sučelje također nije ostvarena zbog greške u izvedbi tiskane pločice PDH računala. Slika \ref{fig:can} prikazuje električnu shemu upravljačkog sklopa za CAN sučelje, koji pretvara CAN signale PDH računala u diferencijalne signale potrebne za komunikaciju s CDH računalom i obrnuto. Iz slike je vidljivo da su obrnuto spojeni priključci VCC i GND, pa taj sklop nije mogao biti korišten u trenutnoj izvedbi tiskane pločice.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=\textwidth]{slike/can.png}
+    \caption{Električna shema upravljačkog sklopa za CAN sučelje \cite{zavrsni_filip_juric}}
+    \label{fig:can}
+\end{figure}
+
+Za odabrani mikrokontroler nisu dostupne \textit{Low Level} biblioteke za CAN sučelje, pa će upravljački program morati biti razvijen pomoću HAL biblioteka. Slanje podataka CAN sučeljem izvodi se funkcijom \texttt{HAL\_CAN\_AddTxMessage()}. Primanje podataka može se izvesti prekidnom rutinom. U tom slučaj u potrebno je omogućiti prekid korištenjem funkcije \texttt{HAL\_CAN\_ActivateNotification()}, a zatim u prekidnoj rutini spremiti ili obraditi dolaznu poruku. Kako bi se smanjilo opterećenje procesora, moguće je postaviti sklopovski filtar poruka. Tada će se prekid aktivirati samo ako dolazna poruka zadovoljava filtar. Filtar se konfigurira funkcijom \texttt{HAL\_CAN\_ConfigFilter()}.
+
+Trenutna verzija tiskane pločice PDH računala trebala je biti korištena prvenstveno za ispitivanje sustava korisnog tereta korištenjem drona \cite{zavrsni_filip_juric}. U tu svrhu predviđeno je korištenje RF modula nRF24L01 za prijenos podataka tijekom leta. Navedeni modul komunicira s PDH računalom sučeljem SPI. Predviđeno je korištenje sučelja SPI2 odabranog mikrokontrolera. Zbog nedostatka vremena tijekom izrade ovog rada, a i zbog činjenice da je planirano testiranje dronom odgođeno, programska potpora za upravljanje RF modulom nije razvijena.
