@@ -45,7 +45,7 @@
 %\includepdf{dokumenti/zadatak.pdf}
 
 % Dodavanje zahvale ili prazne stranice. Ako ne želite dodati zahvalu, naredbu ostavite radi prazne stranice.
-\zahvala{}
+\zahvala{Hvala Karli Salamun na savjetima i pomoći pri izradi ovog rada.}
 
 \tableofcontents
 
@@ -60,7 +60,7 @@
 \bibliographystyle{fer}
 
 \begin{sazetak}
-U ovom radu razvijena je programska potpora za upravljanje sustavom za prikupljanje podataka o svjetlosnom onečišćenju Zemlje, namijenjena za korištenje na nanosatelitu FERSAT. Dan je pregled aktivnosti u sklopu projekta FERSAT koje su prethodile radu. Opisano je postojeće sklopovlje i programska potpora. Opisano je komunikacijsko sučelje SPI (\textit{Serial Peripheral Interface}) pomoću kojeg komponente senzorskog sustava komuniciraju s mikrokontrolerom. Razvijeni su upravljački programi za prikupljanje senzorskih podataka i programska potpora za pripremu podataka za daljnju obradu te računanje spektra signala korištenjem algoritma FFT (\textit{Fast Fourier Transform}). Razvijena programska potpora integrirana je u postojeću programsku potporu za PDH (\textit{Payload Data Handler}) računalo.
+U ovom radu razvijena je programska potpora za upravljanje sustavom za prikupljanje podataka o svjetlosnom onečišćenju Zemlje, namijenjena za korištenje na nanosatelitu FERSAT. Dan je pregled aktivnosti u sklopu projekta FERSAT koje su prethodile radu. Opisano je postojeće sklopovlje i programska potpora. Opisano je komunikacijsko sučelje SPI (\textit{Serial Peripheral Interface}) pomoću kojeg komponente senzorskog sustava komuniciraju s mikrokontrolerom. Razvijeni su upravljački programi za prikupljanje senzorskih podataka i programska potpora za pripremu podataka za daljnju obradu te računanje spektra signala korištenjem algoritma FFT (\textit{Fast Fourier Transform}). Razvijena programska potpora integrirana je u postojeću programsku potporu za PDH (\textit{Payload Data Handler}) računalo koja koristi operacijski sustav FreeRTOS.
 
 \kljucnerijeci{ugradbeni računalni sustavi, CubeSat, FERSAT, STM32, upravljački program, digitalna obrada signala, analogno-digitalna pretvorba, FreeRTOS}
 \end{sazetak}
@@ -68,7 +68,7 @@ U ovom radu razvijena je programska potpora za upravljanje sustavom za prikuplja
 % Navedite naslov na engleskom jeziku.
 \engtitle{Software for CubeSat Nanosatellite Sensor Data Acquisition and Processing}
 \begin{abstract}
-This thesis describes the development of software for acquisition and processing of sensor data from light pollution sensors on a CubeSat nanosatellite. A brief overview of the FERSAT project is provided, along with a description of existing software and hardware. The SPI (Serial Peripheral Interface) communication interface used for data transfer between sensor subsystem components is described in detail. Drivers for an analog-to-digital converter and a temperature sensor are developed, as well as software support for preparing the acquired data for further processing and for calculating the signal spectrum of acquired data using FFT (Fast Fourier Transform). All developed software components are integrated into an existing FreeRTOS application that executes on the PDH (Payload Data Handler) computer.
+This thesis describes the development of software support for acquisition and processing of sensor data from light pollution sensors on a CubeSat nanosatellite. A brief overview of the FERSAT project is provided, along with a description of existing software and hardware. The SPI (Serial Peripheral Interface) communication interface used for data transfer between sensor subsystem components is described in detail. Drivers for an analog-to-digital converter and a temperature sensor are developed, as well as software support for calculating the signal spectrum of acquired data using FFT (Fast Fourier Transform). All developed software components are integrated into an existing FreeRTOS application that executes on the PDH (Payload Data Handler) computer.
 
 \keywords{embedded systems, CubeSat, FERSAT, STM32, driver, digital signal processing, analog-to-digital conversion, FreeRTOS}
 \end{abstract}

@@ -23,7 +23,7 @@ Za rad ostalih podsustava satelita koji nisu direktno vezani uz koristan teret b
 
 Senzorski podsustav ima dvije temeljne zadaće. Prva od njih je korištenjem fotosenzora koji rade u vidljivom dijelu elektromagnetskog spektra prikupiti podatke na temelju kojih će biti moguće odrediti udio LED rasvjete u naseljenim mjestima u odnosu na konvencionalnu natrijevu, metal-halidnu i fluorescentnu javnu rasvjetu. U sklopu projekta FERSAT već je razvijen algoritam koji na temelju obrade signala multispektralnog svjetla sa Zemlje može odrediti ovu informaciju \cite{diplomski_jakov_tutavac}. Mjerenje udjela LED rasvjete zanimljivo je zbog mogućih negativnih utjecaja plavog svjetla na ljudsko zdravlje, koje LED rasvjeta emitira u znatno većem intenzitetu nego konvencionalna \cite{falchi_light_pollution}.
 
-Druga je zadaća senzorskog podsustava mjerenje propusnosti i refleksije atmosfere za ultraljubičasto svjetlo u svrhu određivanja debljine ozonskog omotača. Za mjerenje se koriste PureB detektori ultraljubičastog zračenja razvijeni na FER-u \cite{diplomski_filip_bogdanovic} i algoritmi razvijeni za tu namjenu \cite{zavrsni_kristian_stepancic}. Uspješna mjerenja po prvi put bi potvrdila mogućnost korištenja ove tehnologije u mjerenjima debljine ozonskog omotača iz svemira.
+Druga je zadaća senzorskog podsustava mjerenje propusnosti i refleksije atmosfere za ultraljubičasto svjetlo u svrhu određivanja debljine ozonskog omotača. Za mjerenje se koriste PureB detektori ultraljubičastog zračenja razvijeni na FER-u \cite{diplomski_filip_bogdanovic} te pripadajući algoritimi za obradu podataka s PureB detektora \cite{zavrsni_kristian_stepancic}. Uspješna mjerenja po prvi put bi potvrdila mogućnost korištenja ove tehnologije u mjerenjima debljine ozonskog omotača iz svemira.
 
 Upravljačko sklopovlje potrebno za rad PDH računala već je razvijeno \cite{zavrsni_filip_juric}. Tiskana pločica PDH računala, osim mikrokontrolera STM32L471VGT6, sadrži i vanjsku \textit{Flash} memoriju, sustav za napajanje, sklop za kontrolu izvođenja programa \engl{watchdog}, upravljački sklop za CAN komunikaciju i konektore za povezivanje s ostalim dijelovima sustava. PDH pločica bit će smještena ispod senzorske pločice, u takozvanoj \textit{stack-up} konfiguraciji (slika \ref{fig:fersat_3d}).
 
@@ -48,7 +48,7 @@ Prethodno razvijena programska potpora koristi operacijski sustav za rad u stvar
 \begin{figure}[htb]
     \centering
     \includegraphics[width=\textwidth]{slike/rtos_zadaci.png}
-    \caption{Zadaci programske potpore PDH računala \cite{diplomski_goran_petrak}}
+    \caption{Grafički prikaz zadataka koji se izvode na PDH računalu \cite{diplomski_goran_petrak}}
     \label{fig:rtos_zadaci}
 \end{figure}
 
